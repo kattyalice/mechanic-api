@@ -1,11 +1,106 @@
-Testing & Validation Summary
+# 🔧 Mechanic Shop API
 
-Part 3 of this project focused on improving the API’s reliability through structured testing, schema refinement, and clearer validation rules. My main goal was to ensure every endpoint behaves consistently and handles both correct and incorrect input properly.
+Production-style REST API for managing customers, mechanics, inventory, and service tickets. Built with Flask, SQLAlchemy, JWT authentication, Swagger docs, and deployed on Render.
 
-A full suite of unittest tests was created for mechanics, inventory, and service tickets. Each test runs in a fresh in-memory database, which guarantees isolation and makes the results repeatable. The tests cover successful operations as well as common failure cases—such as missing data, invalid types, unauthorized access, and non-existent IDs. This provides strong assurance that each route responds correctly under real-world conditions.
+Live Swagger Docs: https://mechanic-api-kattyalice.onrender.com/api/docs
 
-Marshmallow schemas were cleaned up and corrected to match the updated models. This included fixing nested relationships, avoiding circular references, and enforcing required fields like VIN for service tickets and name for inventory items. These updates ensure that all input sent to the API is properly validated before reaching the database.
+⸻
 
-Several issues uncovered by the tests, such as missing authentication contexts, invalid field names, or incorrect error messages, were resolved by adjusting the route logic or schema configuration. This refinement step helped align the API’s behavior with the tests and improved overall consistency.
+## 🚀 Stack
+	•	Python
+	•	Flask
+	•	SQLAlchemy ORM
+	•	Marshmallow validation
+	•	JWT authentication (Bearer tokens)
+	•	Swagger / OpenAPI docs
+	•	PostgreSQL
+	•	Gunicorn
+	•	Render deployment
+	•	GitHub CI/CD workflow
 
-Together, the test suite and schema updates now act as documentation for how the API should function. They clearly define expected inputs, outputs, and error responses while ensuring the system is dependable and maintainable moving forward.
+⸻
+
+## ✨ Core Features
+
+### Customers
+	•	Register and login
+	•	JWT token generation
+	•	Protected update/delete routes
+	•	Self-service customer endpoints
+
+### Mechanics
+	•	Full CRUD operations
+	•	Pagination support
+	•	Most-active mechanic endpoint
+
+### Inventory
+	•	CRUD operations
+	•	Protected routes
+	•	Pagination support
+
+### Service Tickets
+	•	Create service tickets
+	•	Assign and remove mechanics
+	•	Add inventory parts to tickets
+	•	Logged-in customer ticket lookup
+
+⸻
+
+## 🔐 Authentication
+
+Login endpoint:
+
+POST /customers/login
+
+Use returned token in protected routes:
+
+Authorization: Bearer <your_token>
+
+Swagger UI includes built-in Authorize support.
+
+⸻
+
+## 🧪 Testing
+
+Includes automated tests for:
+	•	Authentication
+	•	Protected routes
+	•	CRUD endpoints
+	•	Ticket and inventory flows
+
+## Run locally:
+
+python -m unittest discover -s tests
+
+⸻
+
+## ⚙️ Run Locally
+
+Clone repo and install dependencies:
+
+git clone 
+pip install -r requirements.txt
+flask run
+
+Required environment variables:
+
+SECRET_KEY
+DATABASE_URL
+
+⸻
+
+## 📘 API Docs
+
+Interactive Swagger documentation available at:
+
+/api/docs
+
+Test endpoints directly in the browser with JWT auth.
+
+⸻
+
+## 👩‍💻 Author
+
+Kathryn Baldridge
+Backend / Full-Stack Developer
+https://github.com/kattyalice
