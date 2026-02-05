@@ -2,7 +2,7 @@
 
 Production-style REST API for managing customers, mechanics, inventory, and service tickets. Built with Flask, SQLAlchemy, JWT authentication, Swagger docs, and deployed on Render.
 
-Live Swagger Docs: https://mechanic-api-kattyalice.onrender.com/api/docs
+Live Swagger Docs: https://mechanic-api-kattyalice.onrender.com
 
 ⸻
 
@@ -90,10 +90,6 @@ DATABASE_URL
 ⸻
 
 ## 📘 API Docs
-
-Interactive Swagger documentation available at:
-
-/api/docs
 
 Test endpoints directly in the browser with JWT auth.
 
