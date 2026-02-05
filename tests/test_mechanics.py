@@ -3,6 +3,7 @@ from app import create_app
 from app.extensions import db
 from app.models import Mechanic
 from config import TestingConfig
+from app.utils.auth import encode_token
 
 
 class TestMechanic(unittest.TestCase):
@@ -25,6 +26,11 @@ class TestMechanic(unittest.TestCase):
             db.session.commit()
 
             self.mechanic_id = self.mechanic.id
+            self.token = encode_token(1)
+            
+    # Authorization helper
+    def auth_header(self):
+        return {"Authorization": f"Bearer {self.token}"}
 
 # Create mechanic
     def test_create_mechanic(self):
@@ -35,7 +41,7 @@ class TestMechanic(unittest.TestCase):
             "salary": 60000
         }
 
-        response = self.client.post("/mechanics", json=payload)
+        response = self.client.post("/mechanics", json=payload, headers=self.auth_header())
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json["name"], "New Mechanic")
@@ -48,13 +54,13 @@ class TestMechanic(unittest.TestCase):
             "salary": 60000
         }
 
-        response = self.client.post("/mechanics", json=payload)
+        response = self.client.post("/mechanics", json=payload, headers=self.auth_header())
 
         self.assertEqual(response.status_code, 400)
 
 # Get all mechanics
     def test_get_mechanics(self):
-        response = self.client.get("/mechanics")
+        response = self.client.get("/mechanics", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json, list)
@@ -62,14 +68,14 @@ class TestMechanic(unittest.TestCase):
 
 # Get mechanic by ID
     def test_get_mechanic_by_id(self):
-        response = self.client.get(f"/mechanics/{self.mechanic_id}")
+        response = self.client.get(f"/mechanics/{self.mechanic_id}", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["email"], "john@example.com")
 
     # Get mechanic by ID (invalid)
     def test_get_mechanic_invalid(self):
-        response = self.client.get("/mechanics/9999")
+        response = self.client.get("/mechanics/9999", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json["error"], "Mechanic not found.")
@@ -83,7 +89,8 @@ class TestMechanic(unittest.TestCase):
 
         response = self.client.put(
             f"/mechanics/{self.mechanic_id}",
-            json=payload
+            json=payload,
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 200)
@@ -95,7 +102,8 @@ class TestMechanic(unittest.TestCase):
 
         response = self.client.put(
             f"/mechanics/{self.mechanic_id}",
-            json=payload
+            json=payload,
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 400)
@@ -103,21 +111,21 @@ class TestMechanic(unittest.TestCase):
 
 # Delete mechanic
     def test_delete_mechanic(self):
-        response = self.client.delete(f"/mechanics/{self.mechanic_id}")
+        response = self.client.delete(f"/mechanics/{self.mechanic_id}", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("successfully deleted", response.json["message"])
 
     # Delete mechanic (invalid)
     def test_delete_mechanic_invalid(self):
-        response = self.client.delete("/mechanics/9999")
+        response = self.client.delete("/mechanics/9999", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json["error"], "Mechanic not found.")
 
 # Most active mechanic
     def test_get_most_active_mechanic(self):
-        response = self.client.get("/mechanics/most-active")
+        response = self.client.get("/mechanics/most-active", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json, list)

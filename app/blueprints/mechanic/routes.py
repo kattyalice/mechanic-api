@@ -5,10 +5,12 @@ from sqlalchemy import select
 from marshmallow import ValidationError
 from .schemas import mechanic_schema, mechanics_schema
 from . import mechanic_bp
+from app.utils.auth import token_required
 
 
 # Create mechanic
 @mechanic_bp.route("", methods=["POST"])
+@token_required
 def create_mechanic():
 
     try:
@@ -35,6 +37,7 @@ def create_mechanic():
 
 # Get all mechanics, updated with pagination
 @mechanic_bp.route("", methods=["GET"])
+@token_required
 def get_mechanics():
     try:
         page = int(request.args.get("page"))
@@ -53,6 +56,7 @@ def get_mechanics():
 
 # Get mechanic by ID
 @mechanic_bp.route("/<int:mechanic_id>", methods=["GET"])
+@token_required
 def get_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
 
@@ -63,8 +67,8 @@ def get_mechanic(mechanic_id):
 
 
 # Update mechanic
-# Update mechanic
 @mechanic_bp.route("/<int:mechanic_id>", methods=["PUT"])
+@token_required
 def update_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
 
@@ -88,6 +92,7 @@ def update_mechanic(mechanic_id):
 
 # Delete mechanic
 @mechanic_bp.route("/<int:mechanic_id>", methods=["DELETE"])
+@token_required
 def delete_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
 
@@ -102,6 +107,7 @@ def delete_mechanic(mechanic_id):
 
 # Most active mechanic
 @mechanic_bp.route("/most-active", methods=["GET"])
+@token_required
 def get_most_active_mechanic():
     query = select(Mechanic)
     mechanics = db.session.execute(query).scalars().all()

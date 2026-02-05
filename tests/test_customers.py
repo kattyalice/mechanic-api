@@ -11,6 +11,7 @@ class TestCustomer(unittest.TestCase):
     def setUp(self):
         self.app = create_app(TestingConfig)
         self.client = self.app.test_client()
+
         with self.app.app_context():
             db.drop_all()
             db.create_all()
@@ -25,14 +26,13 @@ class TestCustomer(unittest.TestCase):
             db.session.commit()
 
             self.customer_id = self.customer.id
-
             self.token = encode_token(self.customer.id)
 
-# Authorization
+    # Authorization
     def auth_header(self):
         return {"Authorization": f"Bearer {self.token}"}
 
-# Create customer
+    # Create customer
     def test_create_customer(self):
         payload = {
             "name": "New User",
@@ -54,9 +54,10 @@ class TestCustomer(unittest.TestCase):
         }
 
         response = self.client.post("/customers", json=payload)
+
         self.assertEqual(response.status_code, 400)
 
-# Login
+    # Login
     def test_login(self):
         payload = {
             "email": "tuser@example.com",
@@ -77,37 +78,36 @@ class TestCustomer(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json["error"], "Invalid email or password")
 
-# Get all customers
+    # Get all customers
     def test_get_all_customers(self):
-        response = self.client.get("/customers")
+        response = self.client.get("/customers", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json, list)
         self.assertGreaterEqual(len(response.json), 1)
 
-# Get customer by ID
+    # Get customer (me)
     def test_get_customer_by_id(self):
-        response = self.client.get(f"/customers/{self.customer_id}")
+        response = self.client.get("/customers/me", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json["email"], "tuser@example.com")  # FIXED
+        self.assertEqual(response.json["email"], "tuser@example.com")
 
-    # Get customer by ID (invalid)
+    # Get customer (unauthorized / missing token)
     def test_get_customer_invalid(self):
-        response = self.client.get("/customers/9999")
+        response = self.client.get("/customers/me")
 
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json["error"], "Customer not found.")
+        self.assertEqual(response.status_code, 401)
+        self.assertIn("error", response.json)
 
-# Update customer
+    # Update customer
     def test_update_customer(self):
-        payload = {
-            "name": "Updated Name",
-        }
+        payload = {"name": "Updated Name"}
 
         response = self.client.put(
-            f"/customers/{self.customer_id}",
-            json=payload
+            "/customers/me",
+            json=payload,
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 200)
@@ -118,23 +118,28 @@ class TestCustomer(unittest.TestCase):
         payload = {"email": "not-an-email"}
 
         response = self.client.put(
-            f"/customers/{self.customer_id}",
-            json=payload
+            "/customers/me",
+            json=payload,
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("email", response.json)
 
-# Delete customer
+    # Delete customer
     def test_delete_customer(self):
-        response = self.client.delete(f"/customers/{self.customer_id}")
+        response = self.client.delete("/customers/me", headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("successfully deleted", response.json["message"])
 
-    # Delete customer (invalid)
+    # Delete customer (unauthorized / missing token)
     def test_delete_customer_invalid(self):
-        response = self.client.delete("/customers/9999")
+        response = self.client.delete("/customers/me")
 
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json["error"], "Customer not found.")
+        self.assertEqual(response.status_code, 401)
+        self.assertIn("error", response.json)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, g
 from app.extensions import db, limiter, cache
 from app.models import ServiceTicket, Customer, Mechanic, Inventory
 from sqlalchemy import select
@@ -11,11 +11,18 @@ from app.utils.auth import token_required
 # Create service ticket
 @ticket_bp.route("", methods=["POST"])
 @token_required
-def create_service_ticket(customer_id):
+def create_service_ticket():
+    customer_id = g.customer_id
+    
+    incoming = request.get_json() or {}
+    incoming["customer_id"] = customer_id
+    
     try:
-        ticket_data = service_ticket_schema.load(request.json)
+        ticket_data = service_ticket_schema.load(incoming)
     except ValidationError as e:
         return jsonify(e.messages), 400
+
+    ticket_data["customer_id"] = customer_id
 
     customer = db.session.get(Customer, ticket_data["customer_id"])
     if not customer:
@@ -32,6 +39,7 @@ def create_service_ticket(customer_id):
 # Assigne mechanic to ticket
 @ticket_bp.route("/<int:ticket_id>/assign-mechanic/<int:mechanic_id>", methods=["PUT"])
 @limiter.limit("3 per hour")
+@token_required
 def assign_mechanic(ticket_id, mechanic_id):
     ticket = db.session.get(ServiceTicket, ticket_id)
     if not ticket:
@@ -52,6 +60,7 @@ def assign_mechanic(ticket_id, mechanic_id):
 
 # Remove mechanic from ticket
 @ticket_bp.route("/<int:ticket_id>/remove-mechanic/<int:mechanic_id>", methods=["PUT"])
+@token_required
 def remove_mechanic(ticket_id, mechanic_id):
     ticket = db.session.get(ServiceTicket, ticket_id)
     if not ticket:
@@ -72,6 +81,7 @@ def remove_mechanic(ticket_id, mechanic_id):
 
 # Get all service tickets, updated with pagination
 @ticket_bp.route("", methods=["GET"])
+@token_required
 @cache.cached(timeout=30)
 def get_service_tickets():
 
@@ -93,7 +103,8 @@ def get_service_tickets():
 # Get logged in customers tickets
 @ticket_bp.route("/my-tickets", methods=["GET"])
 @token_required
-def get_my_tickets(customer_id):
+def get_my_tickets():
+    customer_id = g.customer_id
 
     query = select(ServiceTicket).where(ServiceTicket.customer_id == customer_id)
     tickets = db.session.execute(query).scalars().all()
@@ -104,11 +115,12 @@ def get_my_tickets(customer_id):
 # Add inventory item
 @ticket_bp.route("/<int:ticket_id>/add-part/<int:part_id>", methods=["PUT"])
 @token_required
-def add_part_to_ticket(customer_id, ticket_id, part_id):
+def add_part_to_ticket(ticket_id, part_id):
 
+    customer_id = g.customer_id
     ticket = db.session.get(ServiceTicket, ticket_id)
     if not ticket:
-        return jsonify({"error": "Service ticket not found."}), 400
+        return jsonify({"error": "Service ticket not found."}), 404
 
     if ticket.customer_id != int(customer_id):
         return jsonify({"error": "Not authorized to modify this ticket"}), 403

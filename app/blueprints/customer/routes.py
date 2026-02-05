@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, g
 from app.extensions import db
 from app.models import Customer
 from sqlalchemy import select
@@ -32,6 +32,7 @@ def create_customer():
 
 # Get all customers, updated with pagination
 @customer_bp.route("", methods=["GET"])
+@token_required
 def get_customers():
     try:
         page = int(request.args.get("page"))
@@ -48,9 +49,11 @@ def get_customers():
         return customers_schema.jsonify(customers), 200
 
 
-# Get customer by ID
-@customer_bp.route("/<int:customer_id>", methods=["GET"])
-def get_customer(customer_id):
+# Get customer by ID (current logged-in user)
+@customer_bp.route("/me", methods=["GET"])
+@token_required
+def get_customer():
+    customer_id = g.customer_id
     customer = db.session.get(Customer, customer_id)
 
     if not customer:
@@ -60,8 +63,10 @@ def get_customer(customer_id):
 
 
 # Update customer
-@customer_bp.route("/<int:customer_id>", methods=["PUT"])
-def update_customer(customer_id):
+@customer_bp.route("/me", methods=["PUT"])
+@token_required
+def update_customer():
+    customer_id = g.customer_id
     customer = db.session.get(Customer, customer_id)
 
     if not customer:
@@ -81,8 +86,10 @@ def update_customer(customer_id):
 
 
 # Delete customer
-@customer_bp.route("/<int:customer_id>", methods=["DELETE"])
-def delete_customer(customer_id):
+@customer_bp.route("/me", methods=["DELETE"])
+@token_required
+def delete_customer():
+    customer_id = g.customer_id
     customer = db.session.get(Customer, customer_id)
 
     if not customer:

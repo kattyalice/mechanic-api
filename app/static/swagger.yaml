@@ -5,7 +5,6 @@ info:
   version: "1.0.0"
 
 
-host: "mechanic-application-api-deployment-ci-m8ex.onrender.com"
 schemes:
   - "https"
 
@@ -19,6 +18,7 @@ securityDefinitions:
     type: apiKey
     name: Authorization
     in: header
+    description: "Enter: Bearer <your_token_here>"
 
 paths:
   /customers/login:
@@ -41,7 +41,7 @@ paths:
             $ref: "#/definitions/LoginResponse"
           examples:
             application/json:
-              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              auth_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
               message: "Login successful"
               status: "success"
 
@@ -67,6 +67,8 @@ paths:
       tags:
         - Customers
       summary: "Get all customers"
+      security:
+        - bearerAuth: []
       description: "Retrieves every customer in the system."
       responses:
         200:
@@ -74,16 +76,13 @@ paths:
           schema:
             $ref: "#/definitions/AllCustomers"
 
-  /customers/{customer_id}:
+  /customers/me:
     get:
       tags:
         - Customers
-      summary: "Get customer by ID"
-      parameters:
-        - name: customer_id
-          in: path
-          required: true
-          type: integer
+      summary: "Get logged in customer"
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "Customer retrieved"
@@ -125,6 +124,8 @@ paths:
       tags:
         - Mechanics
       summary: "Create a mechanic"
+      security:
+        - bearerAuth: []
       parameters:
         - in: body
           name: body
@@ -141,6 +142,8 @@ paths:
       tags:
         - Mechanics
       summary: "Get all mechanics"
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -159,6 +162,8 @@ paths:
       tags:
         - Mechanics
       summary: "Get mechanic by ID"
+      security:
+        - bearerAuth: []
       parameters:
         - name: mechanic_id
           in: path
@@ -174,6 +179,8 @@ paths:
       tags:
         - Mechanics
       summary: "Update mechanic"
+      security:
+        - bearerAuth: []
       parameters:
         - name: mechanic_id
           in: path
@@ -194,6 +201,8 @@ paths:
       tags:
         - Mechanics
       summary: "Delete mechanic"
+      security:
+        - bearerAuth: []
       parameters:
         - name: mechanic_id
           in: path
@@ -210,6 +219,8 @@ paths:
       tags:
         - Mechanics
       summary: "Get most active mechanic"
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "Most active mechanic(s)"
@@ -310,7 +321,7 @@ paths:
           schema:
             $ref: "#/definitions/DeleteInventoryResponse"
 
-  /tickets:
+  /service-tickets:
     post:
       tags:
         - Service Tickets
@@ -320,6 +331,7 @@ paths:
       parameters:
         - in: body
           name: body
+          required: true
           schema:
             $ref: "#/definitions/CreateTicketPayload"
       responses:
@@ -332,6 +344,8 @@ paths:
       tags:
         - Service Tickets
       summary: "Get all service tickets"
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -345,7 +359,7 @@ paths:
           schema:
             $ref: "#/definitions/AllTickets"
 
-  /tickets/my-tickets:
+  /service-tickets/my-tickets:
     get:
       tags:
         - Service Tickets
@@ -358,11 +372,13 @@ paths:
           schema:
             $ref: "#/definitions/AllTickets"
 
-  /tickets/{ticket_id}/assign-mechanic/{mechanic_id}:
+  /service-tickets/{ticket_id}/assign-mechanic/{mechanic_id}:
     put:
       tags:
         - Service Tickets
       summary: "Assign mechanic to ticket"
+      security:
+        - bearerAuth: []
       parameters:
         - name: ticket_id
           in: path
@@ -378,11 +394,13 @@ paths:
           schema:
             $ref: "#/definitions/TicketResponse"
 
-  /tickets/{ticket_id}/remove-mechanic/{mechanic_id}:
+  /service-tickets/{ticket_id}/remove-mechanic/{mechanic_id}:
     put:
       tags:
         - Service Tickets
       summary: "Remove mechanic from ticket"
+      security:
+        - bearerAuth: []
       parameters:
         - name: ticket_id
           in: path
@@ -398,7 +416,7 @@ paths:
           schema:
             $ref: "#/definitions/TicketResponse"
 
-  /tickets/{ticket_id}/add-part/{part_id}:
+  /service-tickets/{ticket_id}/add-part/{part_id}:
     put:
       tags:
         - Service Tickets
@@ -435,7 +453,7 @@ definitions:
   LoginResponse:
     type: object
     properties:
-      token:
+      auth_token:
         type: string
       message:
         type: string
@@ -667,12 +685,9 @@ definitions:
         type: string
       service_desc:
         type: string
-      customer_id:
-        type: integer
     required:
       - VIN
       - service_desc
-      - customer_id
 
   TicketResponse:
     type: object

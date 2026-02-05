@@ -11,7 +11,7 @@ from app.utils.auth import token_required
 # Create inventory item
 @inventory_bp.route("", methods=["POST"])
 @token_required
-def create_inventory(customer_id):
+def create_inventory():
     try:
         part_data = inventory_schema.load(request.json)
     except ValidationError as e:
@@ -28,8 +28,7 @@ def create_inventory(customer_id):
 # Get all inventory items, updated with pagination
 @inventory_bp.route("", methods=["GET"])
 @token_required
-def get_inventory(customer_id):
-
+def get_inventory():
     try:
         page = int(request.args.get("page"))
         per_page = int(request.args.get("per_page"))
@@ -49,8 +48,7 @@ def get_inventory(customer_id):
 # Get inventory item by ID
 @inventory_bp.route("/<int:part_id>", methods=["GET"])
 @token_required
-def get_inventory_item(customer_id, part_id):
-
+def get_inventory_item(part_id):
     part = db.session.get(Inventory, part_id)
 
     if not part:
@@ -62,8 +60,7 @@ def get_inventory_item(customer_id, part_id):
 # Update inventory item
 @inventory_bp.route("/<int:part_id>", methods=["PUT"])
 @token_required
-def update_inventory(customer_id, part_id):
-
+def update_inventory(part_id):
     part = db.session.get(Inventory, part_id)
 
     if not part:
@@ -85,7 +82,7 @@ def update_inventory(customer_id, part_id):
 # Delete inventory item
 @inventory_bp.route("/<int:part_id>", methods=["DELETE"])
 @token_required
-def delete_inventory(customer_id, part_id):
+def delete_inventory(part_id):
     part = db.session.get(Inventory, part_id)
 
     if not part:

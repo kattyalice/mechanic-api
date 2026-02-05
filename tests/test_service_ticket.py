@@ -68,8 +68,7 @@ class TestServiceTickets(unittest.TestCase):
         payload = {
             "VIN": "XYZ999",
             "service_date": "2025-02-10",
-            "service_desc": "Brake repair",
-            "customer_id": self.customer_id
+            "service_desc": "Brake repair"
         }
 
         response = self.client.post(
@@ -84,8 +83,7 @@ class TestServiceTickets(unittest.TestCase):
     # Create service ticket (invalid)
     def test_create_ticket_invalid(self):
         payload = {
-            "service_desc": "Missing VIN",
-            "customer_id": self.customer_id
+            "service_desc": "Missing VIN"
         }
 
         response = self.client.post(
@@ -99,7 +97,7 @@ class TestServiceTickets(unittest.TestCase):
 
 # Get all tickets
     def test_get_all_tickets(self):
-        response = self.client.get("/service-tickets")
+        response = self.client.get("/service-tickets",headers=self.auth_header())
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json, list)
@@ -123,7 +121,8 @@ class TestServiceTickets(unittest.TestCase):
 # Assign mechanic
     def test_assign_mechanic(self):
         response = self.client.put(
-            f"/service-tickets/{self.ticket_id}/assign-mechanic/{self.mech_id}"
+            f"/service-tickets/{self.ticket_id}/assign-mechanic/{self.mech_id}",
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 200)
@@ -133,7 +132,8 @@ class TestServiceTickets(unittest.TestCase):
     # Assign mechanic (invalid)
     def test_assign_mechanic_ticket_invalid(self):
         response = self.client.put(
-            "/service-tickets/9999/assign-mechanic/1"
+            "/service-tickets/9999/assign-mechanic/1",
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 404)
@@ -142,11 +142,13 @@ class TestServiceTickets(unittest.TestCase):
 # Remove mechanic
     def test_remove_mechanic(self):
         self.client.put(
-            f"/service-tickets/{self.ticket_id}/assign-mechanic/{self.mech_id}"
+            f"/service-tickets/{self.ticket_id}/assign-mechanic/{self.mech_id}",
+            headers=self.auth_header()
         )
 
         response = self.client.put(
-            f"/service-tickets/{self.ticket_id}/remove-mechanic/{self.mech_id}"
+            f"/service-tickets/{self.ticket_id}/remove-mechanic/{self.mech_id}",
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 200)
@@ -155,7 +157,8 @@ class TestServiceTickets(unittest.TestCase):
     # Remove mechanic (invalid)
     def test_remove_mechanic_invalid(self):
         response = self.client.put(
-            "/service-tickets/9999/remove-mechanic/9999"
+            "/service-tickets/9999/remove-mechanic/9999",
+            headers=self.auth_header()
         )
 
         self.assertEqual(response.status_code, 404)
