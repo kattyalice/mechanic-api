@@ -6,6 +6,7 @@ from marshmallow import ValidationError
 from .schemas import customer_schema, customers_schema, login_schema
 from . import customer_bp
 from app.utils.auth import encode_token, token_required
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # Create customer
@@ -22,6 +23,7 @@ def create_customer():
     if existing_customer:
         return jsonify({"error": "Email already associated with an account."}), 400
 
+    customer_data["password"] = generate_password_hash(customer_data["password"])
     new_customer = Customer(**customer_data)
 
     db.session.add(new_customer)
@@ -76,6 +78,9 @@ def update_customer():
         customer_data = customer_schema.load(request.json, partial=True)
     except ValidationError as e:
         return jsonify(e.messages), 400
+    
+    if "password" in customer_data:
+        customer_data["password"] = generate_password_hash(customer_data["password"])
 
     for key, value in customer_data.items():
         setattr(customer, key, value)
@@ -115,7 +120,7 @@ def login():
     query = select(Customer).where(Customer.email == email)
     customer = db.session.execute(query).scalars().first()
 
-    if not customer or customer.password != password:
+    if not customer or not check_password_hash(customer.password, password):
         return jsonify({"error": "Invalid email or password"}), 401
 
     token = encode_token(customer.id)

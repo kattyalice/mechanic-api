@@ -13,6 +13,7 @@ class CustomerSchema(ma.SQLAlchemyAutoSchema):
         unknown = "exclude"
         
     email = fields.Email(required=False)
+    password = fields.String(required=True, load_only=True)
 
     service_tickets = fields.List(
         fields.Nested("ServiceTicketSchema", exclude=("customer",)),
