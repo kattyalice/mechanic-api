@@ -1,32 +1,34 @@
-# 🔧 Mechanic Shop API
+# Mechanic Shop API
 
 Production-style REST API for managing customers, mechanics, inventory, and service tickets. Built with Flask, SQLAlchemy, JWT authentication, Swagger docs, and deployed on Render.
 
 Live Swagger Docs: https://mechanic-api-kattyalice-3sbu.onrender.com/
 
+> Hosted on free tiers: the first request after a period of inactivity can take up to a minute while the server wakes up.
+
 ⸻
 
-## 🚀 Stack
-	•	Python
-	•	Flask
+## Stack
+	•	Python / Flask
 	•	SQLAlchemy ORM
 	•	Marshmallow validation
 	•	JWT authentication (Bearer tokens)
+	•   Werkzeug password hash
+	•   Flask-Limiter rate limiting and Flask-Caching
 	•	Swagger / OpenAPI docs
-	•	PostgreSQL
 	•	Gunicorn
 	•	Render deployment
-	•	GitHub CI/CD workflow
+	•	GitHub Actions CI/CD workflow
 
 ⸻
 
-## ✨ Core Features
+## Core Features
 
 ### Customers
 	•	Register and login
 	•	JWT token generation
 	•	Protected update/delete routes
-	•	Self-service customer endpoints
+	•	Self-service customer endpoints (`/customers/me`)
 
 ### Mechanics
 	•	Full CRUD operations
@@ -46,21 +48,73 @@ Live Swagger Docs: https://mechanic-api-kattyalice-3sbu.onrender.com/
 
 ⸻
 
-## 🔐 Authentication
+### Security
+	•	Passwords are hashed with Werkeug before they're stored, never saved as plain text
+	•	Passwords are write-only in the API: accepted on register and updated, never returned in responses
+	•	JWT-protected routes for customer data, mechanics, inventory, and tickets
+	•	Rate limiting on endpoints
+	•	Database connections are checked before use, so the app recovers cleanly when the serverless database wakes from idle
+	
+⸻
 
-Login endpoint:
+## Authentication
 
+Log in to get a token:
+
+```
 POST /customers/login
+```
 
-Use returned token in protected routes:
+Send the token with protected requests:
 
+```
 Authorization: Bearer <your_token>
+```
 
-Swagger UI includes built-in Authorize support.
+In Swagger, click **Authorize** and enter `Bearer <your_token>`.
 
 ⸻
 
-## 🧪 Testing
+## Run Locally
+
+Locally, the app runs with `DevelopmentConfig` and a SQLite database, so no external database is needed.
+
+```bash
+git clone https://github.com/kattyalice/mechanic-api.git
+cd mechanic-api
+python -m venv venv
+```
+
+Activate the virtual environment:
+
+```bash
+# Windows (PowerShell)
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+```
+
+Install dependencies and start the server:
+
+```bash
+pip install -r requirements.txt
+python flask_app.py
+```
+
+Open http://127.0.0.1:5000 to view the Swagger docs. Set the **Schemes** dropdown to **HTTP** when testing locally.
+
+### Environment Variables
+
+| Variable | Where | Purpose |
+| --- | --- | --- |
+| `FLASK_CONFIG` | Production | Set to `ProductionConfig` (defaults to `DevelopmentConfig`) |
+| `SQLALCHEMY_DATABASE_URI` | Production | PostgreSQL connection string |
+| `SECRET_KEY` | Production and local | Signs JWT tokens |
+
+⸻
+
+## Testing
 
 Includes automated tests for:
 	•	Authentication
@@ -68,34 +122,17 @@ Includes automated tests for:
 	•	CRUD endpoints
 	•	Ticket and inventory flows
 
-## Run locally:
+Run them locally:
 
+```bash
 python -m unittest discover -s tests
+```
+
+Tests also run automatically through GitHub Actions on every push.
 
 ⸻
 
-## ⚙️ Run Locally
-
-Clone repo and install dependencies:
-
-git clone 
-pip install -r requirements.txt
-flask run
-
-Required environment variables:
-
-SECRET_KEY
-DATABASE_URL
-
-⸻
-
-## 📘 API Docs
-
-Test endpoints directly in the browser with JWT auth.
-
-⸻
-
-## 👩‍💻 Author
+## Author
 
 Kathryn Baldridge
 Backend / Full-Stack Developer
