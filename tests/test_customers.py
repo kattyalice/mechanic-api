@@ -4,6 +4,7 @@ from app.extensions import db
 from app.models import Customer
 from app.utils.auth import encode_token
 from config import TestingConfig
+from werkzeug.security import generate_password_hash
 
 
 class TestCustomer(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestCustomer(unittest.TestCase):
                 name="Test User",
                 email="tuser@example.com",
                 phone="123-123-1234",
-                password="password123",
+                password=generate_password_hash("password123"),
             )
             db.session.add(self.customer)
             db.session.commit()
